@@ -1,12 +1,16 @@
-FROM node:18
+FROM python:3.9-slim
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Устанавливаем зависимости
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
+# Копируем код приложения
 COPY . .
 
-EXPOSE 3000
+# Указываем порт
+EXPOSE 8000
 
-CMD ["npm", "start"]
+# Команда запуска
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
