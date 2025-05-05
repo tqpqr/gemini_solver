@@ -11,15 +11,15 @@ app = FastAPI()
 # Настройка CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Разрешаем все источники (в продакшене уточните домены)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Получаем API-ключ из переменной окружения
+# Получаем API-ключ и URL из переменных окружения
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "default_key_if_not_set")
-GEMINI_API_URL = os.getenv("GEMINI_API_URL", "https://api.gemini.com/v1/analyze")
+GEMINI_API_URL = os.getenv("GEMINI_API_URL", "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent")
 
 @app.post("/upload")
 async def upload_image(data: dict):
@@ -32,16 +32,34 @@ async def upload_image(data: dict):
         img_bytes = base64.b64decode(image_data)
         img = Image.open(io.BytesIO(img_bytes))
 
-        # Отправка на Gemini API (пример)
+        # Формируем запрос к Gemini API (пример для Google Gemini API)
         response = requests.post(
-            GEMINI_API_URL,
-            headers={"Authorization": f"Bearer {GEMINI_API_KEY}"},
-            json={"image": image_data}
+            f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
+            headers={"Content-Type": "application/json"},
+            json={
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "inline_data": {
+                                    "mime_type": "image/png",
+                                    "data": image_data
+                                }
+                            },
+                            {
+                                "text": "Analyze this image and provide a description."
+                            }
+                        ]
+                    }
+                ]
+            }
         )
         response.raise_for_status()
         result = response.json()
 
-        return {"answer": result.get("answer", "No analysis available")}
+        # Извлекаем ответ (зависит от структуры ответа API)
+        answer = result.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "No analysis available")
+        return {"answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
