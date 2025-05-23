@@ -22,13 +22,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Получаем API-ключ и URL из переменных окружения
+# Получаем API-ключ и URL из переменных окружения, а также задаем время ожидания ответа
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "default_key_if_not_set")
 GEMINI_API_URL = os.getenv("GEMINI_API_URL", "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent")
+TIMEOUT_SECONDS = int(os.getenv("TIMEOUT_SECONDS", 30))  # Значение по умолчанию 30 секунд
 
 # Логируем значения переменных окружения
 logger.info(f"GEMINI_API_KEY: {'set' if GEMINI_API_KEY != 'default_key_if_not_set' else 'not set'}")
 logger.info(f"GEMINI_API_URL: {GEMINI_API_URL}")
+logger.info(f"TIMEOUT_SECONDS: {TIMEOUT_SECONDS}")
 
 @app.post("/upload")
 async def upload_image(data: dict):
@@ -80,7 +82,7 @@ async def upload_image(data: dict):
                     }
                 ]
             },
-            timeout=30  # Добавляем таймаут
+            timeout=TIMEOUT_SECONDS  # Добавляем таймаут из переменной
         )
         logger.info(f"Gemini API response status: {response.status_code}")
         response.raise_for_status()
