@@ -80,7 +80,7 @@ async def upload_image(data: dict):
                     }
                 ]
             },
-            timeout=10  # Добавляем таймаут
+            timeout=30  # Добавляем таймаут
         )
         logger.info(f"Gemini API response status: {response.status_code}")
         response.raise_for_status()
