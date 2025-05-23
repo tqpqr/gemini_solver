@@ -74,7 +74,7 @@ async def upload_image(data: dict):
                                 }
                             },
                             {
-                                "text": "Analyze this image and provide a description."
+                                "text": "This is a multiple-choice test question. Analyze the image, identify the correct answer, and return only the number (e.g., 1, 2, 3, or 4) and text of the correct option in russian. Do not provide any additional explanation or text."
                             }
                         ]
                     }
